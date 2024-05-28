@@ -3,9 +3,46 @@ const db = require("../db/connection");
 const app = require("../app");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data/index");
+const endpointsFile = require("../endpoints.json");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
+
+describe("/api", () => {
+  it("404: responds with a 404 error when request an invalid endpoint", () => {
+    return request(app)
+      .get("/api/topixx")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+});
+
+describe("GET /api", () => {
+  it("200: responds with an object containing all the endpoints available at the moment", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toEqual(endpointsFile);
+      });
+  });
+
+  it("200: responds with an object containing the correct keys", () => {
+    request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        const correctKeys = ["description", "queries", "exampleResponse"];
+        const { endpoints } = body;
+
+        for (const key in endpoints) {
+          expect(Object.keys(endpoints[key])).toEqual(correctKeys);
+        }
+      });
+  });
+});
 
 describe("GET /api/topics", () => {
   it("200: responds with an array of all the topics", () => {
@@ -20,15 +57,6 @@ describe("GET /api/topics", () => {
           expect(typeof topic.slug).toBe("string");
           expect(typeof topic.description).toBe("string");
         });
-      });
-  });
-
-  it("404: responds with a 404 error when request an invalid endpoint", () => {
-    return request(app)
-      .get("/api/topixx")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("Not found");
       });
   });
 });
