@@ -9,7 +9,7 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe("/api", () => {
-  it("404: responds with a 404 error when request an invalid endpoint", () => {
+  it("404: ERROR - responds with a 404 error when request an invalid endpoint", () => {
     return request(app)
       .get("/api/topixx")
       .expect(404)
@@ -50,6 +50,51 @@ describe("GET /api/topics", () => {
   });
 });
 
+describe("GET /api/articles", () => {
+  it("200: responds with an array of article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+
+        expect(articles.length).toBe(5);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  it("200: responds with an array sorted by when it was created and descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSorted("created_at", { descending: true });
+      });
+  });
+  it("200: responds with an array of objects without a body property", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        articles.forEach((article) => {
+          expect(article.body).toBeUndefined();
+        });
+      });
+  });
+});
+
 describe("GET /api/articles/:article_id", () => {
   it("200: responds with an article object ", () => {
     return request(app)
@@ -69,7 +114,7 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  it("404: responds with a 'ID not found' message when given a valid ID that doesnt exist", () => {
+  it("404: ERROR - responds with a 'ID not found' message when given a valid ID that doesnt exist", () => {
     return request(app)
       .get("/api/articles/999999")
       .expect(404)
@@ -79,7 +124,7 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  it("400: responds with a 'Bad Request - Invalid ID' message when given an invalid ID", () => {
+  it("400: ERROR - responds with a 'Bad Request - Invalid ID' message when given an invalid ID", () => {
     return request(app)
       .get("/api/articles/NotAnID")
       .expect(400)
