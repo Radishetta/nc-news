@@ -94,7 +94,6 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        console.log(articles);
 
         articles.forEach((article) => {
           expect(article.body).toBeUndefined();
@@ -209,6 +208,53 @@ describe("GET /api/articles/:article_id/comments", () => {
         const { msg } = body;
 
         expect(msg).toBe("Bad Request - Invalid ID");
+      });
+  });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  it("201: responds with the posted comment", () => {
+    const newComment = { username: "butter_bridge", body: "Hello this is a test comment" };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { newComment } = body;
+
+        expect(newComment).toMatchObject({
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: "butter_bridge",
+          body: "Hello this is a test comment",
+          article_id: 1,
+        });
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed a malformed comment", () => {
+    const newComment = { author: "butter_bridge" };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request - Invalid Data");
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed a comment with an invalid data type", () => {
+    const newComment = { author: 9999, body: "Hello this is a test comment" };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request - Invalid Data");
       });
   });
 });
