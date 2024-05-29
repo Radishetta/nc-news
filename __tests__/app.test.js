@@ -14,7 +14,9 @@ describe("/api", () => {
       .get("/api/topixx")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Not found");
+        expect(response.body.msg).toBe(
+          "Not found - Please use /api to see a list of available endpoints"
+        );
       });
   });
 });
@@ -25,21 +27,8 @@ describe("GET /api", () => {
       .get("/api")
       .expect(200)
       .then(({ body }) => {
-        expect(body).toEqual(endpointsFile);
-      });
-  });
-
-  it("200: responds with an object containing the correct keys", () => {
-    request(app)
-      .get("/api")
-      .expect(200)
-      .then(({ body }) => {
-        const correctKeys = ["description", "queries", "exampleResponse"];
-        const { endpoints } = body;
-
-        for (const key in endpoints) {
-          expect(Object.keys(endpoints[key])).toEqual(correctKeys);
-        }
+        const { availableEndpoints } = body;
+        expect(availableEndpoints).toEqual(endpointsFile);
       });
   });
 });
@@ -57,6 +46,46 @@ describe("GET /api/topics", () => {
           expect(typeof topic.slug).toBe("string");
           expect(typeof topic.description).toBe("string");
         });
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id", () => {
+  it("200: responds with an article object ", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toMatchObject({
+          article_id: 1,
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+
+  it("404: responds with a 'ID not found' message when given a valid ID that doesnt exist", () => {
+    return request(app)
+      .get("/api/articles/999999")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("ID not found");
+      });
+  });
+
+  it("400: responds with a 'Bad Request - Invalid ID' message when given an invalid ID", () => {
+    return request(app)
+      .get("/api/articles/NotAnID")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Bad Request - Invalid ID");
       });
   });
 });
