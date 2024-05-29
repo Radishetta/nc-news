@@ -28,6 +28,7 @@ describe("GET /api", () => {
       .expect(200)
       .then(({ body }) => {
         const { availableEndpoints } = body;
+
         expect(availableEndpoints).toEqual(endpointsFile);
       });
   });
@@ -42,6 +43,7 @@ describe("GET /api/topics", () => {
         const { topics } = body;
 
         expect(topics.length).toBe(3);
+
         topics.forEach((topic) => {
           expect(typeof topic.slug).toBe("string");
           expect(typeof topic.description).toBe("string");
@@ -58,7 +60,8 @@ describe("GET /api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
 
-        expect(articles.length).toBe(5);
+        expect(articles.length).toBe(13);
+
         articles.forEach((article) => {
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -73,21 +76,26 @@ describe("GET /api/articles", () => {
         });
       });
   });
+
   it("200: responds with an array sorted by when it was created and descending order", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+
         expect(articles).toBeSorted("created_at", { descending: true });
       });
   });
+
   it("200: responds with an array of objects without a body property", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        console.log(articles);
+
         articles.forEach((article) => {
           expect(article.body).toBeUndefined();
         });
@@ -120,6 +128,7 @@ describe("GET /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body }) => {
         const { msg } = body;
+
         expect(msg).toBe("ID not found");
       });
   });
@@ -130,6 +139,75 @@ describe("GET /api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
+
+        expect(msg).toBe("Bad Request - Invalid ID");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  it("200: responds with an array of all the comments for the given article_id ", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+
+        expect(comments.length).toBe(11);
+
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
+        });
+      });
+  });
+
+  it("200: responds with an array sorted by when the comments were created and ascending order", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+
+        expect(comments).toBeSorted("created_at", { descending: false });
+      });
+  });
+
+  it("200: responds with an empty array if the article_id exists but doesnt have any comment asociated", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+
+        expect(comments).toEqual([]);
+      });
+  });
+
+  it("404: ERROR - responds with an error message if the article doesnt exist", () => {
+    return request(app)
+      .get("/api/articles/9999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("Not Found");
+      });
+  });
+
+  it("400: ERROR - responds with an error message if the article_id is not valid", () => {
+    return request(app)
+      .get("/api/articles/invalidID/comments")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+
         expect(msg).toBe("Bad Request - Invalid ID");
       });
   });
