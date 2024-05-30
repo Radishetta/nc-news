@@ -34,6 +34,28 @@ describe("GET /api", () => {
   });
 });
 
+describe("GET /api/users", () => {
+  it("200: responds with an array of all the users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+
+        expect(Array.isArray(users)).toBe(true);
+        expect(users.length).toBe(4);
+
+        users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+});
+
 describe("GET /api/topics", () => {
   it("200: responds with an array of all the topics", () => {
     return request(app)
@@ -42,6 +64,7 @@ describe("GET /api/topics", () => {
       .then(({ body }) => {
         const { topics } = body;
 
+        expect(Array.isArray(topics)).toBe(true);
         expect(topics.length).toBe(3);
 
         topics.forEach((topic) => {
@@ -60,6 +83,7 @@ describe("GET /api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
 
+        expect(Array.isArray(articles)).toBe(true);
         expect(articles.length).toBe(13);
 
         articles.forEach((article) => {
@@ -128,7 +152,7 @@ describe("GET /api/articles/:article_id", () => {
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Article Not Found");
+        expect(msg).toBe("Article ID Not Found");
       });
   });
 
@@ -235,19 +259,22 @@ describe("POST /api/articles/:article_id/comments", () => {
   });
 
   it("404: ERROR - responds with an error message when given a valid ID that doesnt exist", () => {
+    const newComment = { username: "butter_bridge", body: "Hello this is a test comment" };
+
     return request(app)
-      .get("/api/articles/999999")
+      .post("/api/articles/999999/comments")
+      .send(newComment)
       .expect(404)
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Article Not Found");
+        expect(msg).toBe("ID Not Found");
       });
   });
 
   it("400: ERROR - responds with an error message when given an invalid ID", () => {
     return request(app)
-      .get("/api/articles/NotAnID")
+      .post("/api/articles/NotAnID/comments")
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
@@ -330,19 +357,25 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 
   it("404: ERROR - responds with an error message when given a valid ID that doesnt exist", () => {
+    const newUpdate = { inc_votes: 10 };
+
     return request(app)
-      .get("/api/articles/999999")
+      .patch("/api/articles/999999")
+      .send(newUpdate)
       .expect(404)
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Article Not Found");
+        expect(msg).toBe("Article ID Not Found");
       });
   });
 
   it("400: ERROR - responds with an error message when given an invalid ID", () => {
+    const newUpdate = { inc_votes: 10 };
+
     return request(app)
-      .get("/api/articles/NotAnID")
+      .patch("/api/articles/NotAnID")
+      .send(newUpdate)
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
