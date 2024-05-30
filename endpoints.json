@@ -93,5 +93,21 @@
         }
       ]
     }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates vote count of an article associated to the given ID, returns the updated article ",
+    "queries": [],
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 13,
+          "body": "Fruit pastilles",
+          "article_id": 1,
+          "author": "icellusedkars",
+          "votes": 10,
+          "created_at": "2020-06-15T10:25:00.000Z"
+        }
+      ]
+    }
   }
 }
