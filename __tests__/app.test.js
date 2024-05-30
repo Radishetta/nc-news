@@ -127,7 +127,7 @@ describe("GET /api/articles", () => {
 });
 
 describe("GET /api/articles - topic query", () => {
-  it("200: responds with articles associated to the given topic", () => {
+  it("200: responds with an array of articles associated to the given topic", () => {
     return request(app)
       .get("/api/articles?topic=mitch")
       .expect(200)
@@ -149,6 +149,17 @@ describe("GET /api/articles - topic query", () => {
             comment_count: expect.any(Number),
           });
         });
+      });
+  });
+
+  it("200: responds with an empty array if the topic has no associated articles", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+
+        expect(articles).toEqual([]);
       });
   });
 
@@ -177,6 +188,25 @@ describe("GET /api/articles/:article_id", () => {
           created_at: expect.any(String),
           votes: expect.any(Number),
           article_img_url: expect.any(String),
+        });
+      });
+  });
+
+  it("200: responds with an article object with a comment_count property", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toMatchObject({
+          article_id: 1,
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          comment_count: 11,
         });
       });
   });
