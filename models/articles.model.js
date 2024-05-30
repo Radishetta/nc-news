@@ -6,7 +6,7 @@ exports.fetchArticleById = (article_id) => {
       if (article.length === 0) {
         return Promise.reject({
           status: 404,
-          msg: "Article Not Found",
+          msg: "Article ID Not Found",
         });
       } else return article[0];
     });
@@ -24,8 +24,7 @@ exports.fetchArticles = () => {
       ORDER BY articles.created_at DESC;`
     )
     .then(({ rows: articles }) => {
-      if (!articles.length) return Promise.reject({ status: 404, msg: "Articles Not Found" });
-      else return articles;
+      return articles;
     });
 };
 
@@ -48,6 +47,9 @@ exports.updateArticle = (article_id, inc_votes) => {
       [inc_votes, article_id]
     )
     .then(({ rows: updatedArticle }) => {
+      if (updatedArticle[0] === undefined) {
+        return Promise.reject({ status: 404, msg: "Article ID Not Found" });
+      }
       return updatedArticle[0];
     });
 };
