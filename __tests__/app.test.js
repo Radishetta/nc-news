@@ -126,6 +126,42 @@ describe("GET /api/articles", () => {
   });
 });
 
+describe("GET /api/articles - topic query", () => {
+  it("200: responds with articles associated to the given topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+
+        expect(articles.length).toBe(12);
+        expect(Array.isArray(articles)).toBe(true);
+
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: "mitch",
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+
+  it("404: ERROR - responds with an error message when passed and inexistent topic", () => {
+    return request(app)
+      .get("/api/articles?topic=radishetta")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Topic Not Found");
+      });
+  });
+});
+
 describe("GET /api/articles/:article_id", () => {
   it("200: responds with an article object ", () => {
     return request(app)
