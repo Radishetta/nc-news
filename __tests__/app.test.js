@@ -121,14 +121,14 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  it("404: ERROR - responds with a 'ID not found' message when given a valid ID that doesnt exist", () => {
+  it("404: ERROR - responds with a 'Article not found' message when given a valid ID that doesnt exist", () => {
     return request(app)
       .get("/api/articles/999999")
       .expect(404)
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("ID not found");
+        expect(msg).toBe("Article Not Found");
       });
   });
 
@@ -139,7 +139,7 @@ describe("GET /api/articles/:article_id", () => {
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Bad Request - Invalid ID");
+        expect(msg).toBe("Bad Request");
       });
   });
 });
@@ -196,7 +196,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Not Found");
+        expect(msg).toBe("Articles Not Found");
       });
   });
 
@@ -207,7 +207,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then(({ body }) => {
         const { msg } = body;
 
-        expect(msg).toBe("Bad Request - Invalid ID");
+        expect(msg).toBe("Bad Request");
       });
   });
 });
@@ -242,7 +242,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request - Invalid Data");
+        expect(body.msg).toBe("Bad Request");
       });
   });
 
@@ -254,7 +254,56 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request - Invalid Data");
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  it("200: responds with the updated article", () => {
+    const newUpdate = { inc_votes: 10 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(newUpdate)
+      .expect(200)
+      .then(({ body }) => {
+        const { updatedArticle } = body;
+
+        expect(updatedArticle).toMatchObject({
+          article_id: 1,
+          title: expect.any(String),
+          topic: "mitch",
+          author: "butter_bridge",
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: 110,
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed a malformed object", () => {
+    const newUpdate = {};
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(newUpdate)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed an object with invalid data type", () => {
+    const newUpdate = { inc_votes: "imAVote" };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(newUpdate)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
       });
   });
 });
