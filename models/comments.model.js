@@ -46,7 +46,5 @@ exports.removeComment = (comment_id) => {
   WHERE comment_id = $1;`,
       [comment_id]
     )
-    .then(({ rows: comment }) => {
-      return comment;
-    });
+    .then(() => {});
 };
