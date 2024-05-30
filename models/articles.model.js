@@ -39,7 +39,7 @@ exports.checkArticleExists = (article_id) => {
     });
 };
 
-exports.updateArticles = (article_id, inc_votes) => {
+exports.updateArticle = (article_id, inc_votes) => {
   return db
     .query(
       `UPDATE articles SET votes = votes + $1

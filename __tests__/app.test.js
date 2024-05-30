@@ -121,7 +121,7 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  it("404: ERROR - responds with a 'Article not found' message when given a valid ID that doesnt exist", () => {
+  it("404: ERROR - responds with an error message when given a valid ID that doesnt exist", () => {
     return request(app)
       .get("/api/articles/999999")
       .expect(404)
@@ -132,7 +132,7 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  it("400: ERROR - responds with a 'Bad Request - Invalid ID' message when given an invalid ID", () => {
+  it("400: ERROR - responds with an error message when given an invalid ID", () => {
     return request(app)
       .get("/api/articles/NotAnID")
       .expect(400)
@@ -234,6 +234,28 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 
+  it("404: ERROR - responds with an error message when given a valid ID that doesnt exist", () => {
+    return request(app)
+      .get("/api/articles/999999")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("Article Not Found");
+      });
+  });
+
+  it("400: ERROR - responds with an error message when given an invalid ID", () => {
+    return request(app)
+      .get("/api/articles/NotAnID")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("Bad Request");
+      });
+  });
+
   it("400: ERROR - responds with an error message when passed a malformed comment", () => {
     const newComment = { author: "butter_bridge" };
 
@@ -304,6 +326,52 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad Request");
+      });
+  });
+
+  it("404: ERROR - responds with an error message when given a valid ID that doesnt exist", () => {
+    return request(app)
+      .get("/api/articles/999999")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("Article Not Found");
+      });
+  });
+
+  it("400: ERROR - responds with an error message when given an invalid ID", () => {
+    return request(app)
+      .get("/api/articles/NotAnID")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  it("204: deletes the comment", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+
+  it("400: ERROR - responds with an error message when passed an invalid ID ", () => {
+    return request(app)
+      .delete("/api/comments/invalidID")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+
+  it("404: ERROR - responds with an error message when passed a valid but inexistent ID", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment Not Found");
       });
   });
 });
