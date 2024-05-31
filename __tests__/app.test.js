@@ -56,6 +56,32 @@ describe("GET /api/users", () => {
   });
 });
 
+describe("GET /api/users/:username", () => {
+  it("200: responds with a user object ", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toMatchObject({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url: "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+  });
+
+  it("404: ERROR - responds with an error message when given a valid username that doesnt exist", () => {
+    return request(app)
+      .get("/api/users/Radishetta")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+
+        expect(msg).toBe("User Not Found");
+      });
+  });
+});
+
 describe("GET /api/topics", () => {
   it("200: responds with an array of all the topics", () => {
     return request(app)
