@@ -21,20 +21,114 @@ exports.fetchArticleById = (article_id) => {
     });
 };
 
-exports.fetchArticles = (topic) => {
+exports.fetchArticles = (
+  author,
+  title,
+  topic,
+  created_at,
+  votes,
+  article_img_url,
+  comment_count,
+  sort_by = "created_at",
+  order = "desc"
+) => {
+  const validSortColumns = [
+    "author",
+    "title",
+    "topic",
+    "created_at",
+    "votes",
+    "article_img_url",
+    "comment_count",
+  ];
+  const validOrderColumns = ["asc", "ASC", "desc", "DESC"];
+
+  if (!validSortColumns.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid Sort Query" });
+  }
+
+  if (!validOrderColumns.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid Order Query" });
+  }
+
   let querySql = `SELECT articles.author, articles.title, articles.article_id,
   articles.topic, articles.created_at, articles.votes, 
   articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count 
   FROM articles
-  LEFT JOIN comments ON comments.article_id = articles.article_id`;
+  LEFT JOIN comments ON comments.article_id = articles.article_id `;
+
   const queryValues = [];
 
   if (topic) {
-    querySql += ` WHERE topic = $1`;
+    querySql += `WHERE topic = $1 `;
     queryValues.push(topic);
   }
-  querySql += ` GROUP BY articles.article_id
-  ORDER BY articles.created_at DESC`;
+
+  if (author) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(author);
+    querySql += `articles.author = $${queryValues.length} `;
+  }
+
+  if (title) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(title);
+    querySql += `articles.title = $${queryValues.length} `;
+  }
+
+  if (created_at) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(created_at);
+    querySql += `articles.created_at = $${queryValues.length} `;
+  }
+
+  if (votes) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(votes);
+    querySql += `articles.votes = $${queryValues.length} `;
+  }
+
+  if (article_img_url) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(article_img_url);
+    querySql += `articles.article_img_url = $${queryValues.length} `;
+  }
+
+  if (comment_count) {
+    if (queryValues.length) {
+      querySql += `AND `;
+    } else {
+      querySql += `WHERE `;
+    }
+    queryValues.push(comment_count);
+    querySql += `articles.comment_count = $${queryValues.length} `;
+  }
+  querySql += `GROUP BY articles.article_id `;
+
+  if (sort_by || order) {
+    querySql += `
+    ORDER BY articles.${sort_by} ${order}`;
+  }
 
   querySql += ";";
 

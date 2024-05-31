@@ -29,7 +29,17 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles, sorted by the oldest articles first",
-    "queries": ["topics"],
+    "queries": [
+      "author",
+      "title",
+      "topic",
+      "created_at",
+      "votes",
+      "article_img_url",
+      "comment_count",
+      "sort_by",
+      "order"
+    ],
     "exampleResponse": {
       "articles": [
         {
