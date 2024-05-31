@@ -16,9 +16,31 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { topic } = req.query;
+  const {
+    author,
+    title,
+    topic,
+    created_at,
+    votes,
+    article_img_url,
+    comment_count,
+    sort_by,
+    order,
+  } = req.query;
 
-  const promises = [fetchArticles(topic)];
+  const promises = [
+    fetchArticles(
+      author,
+      title,
+      topic,
+      created_at,
+      votes,
+      article_img_url,
+      comment_count,
+      sort_by,
+      order
+    ),
+  ];
 
   if (topic) {
     promises.push(checkTopicExists(topic));

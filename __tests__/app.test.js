@@ -108,7 +108,7 @@ describe("GET /api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
 
-        expect(articles).toBeSorted("created_at", { descending: true });
+        expect(articles).toBeSortedBy("created_at", { descending: true, coerce: true });
       });
   });
 
@@ -122,6 +122,35 @@ describe("GET /api/articles", () => {
         articles.forEach((article) => {
           expect(article.body).toBeUndefined();
         });
+      });
+  });
+
+  it("200: responds with an array of articles sorted by the given value and ordered by the given value", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+
+        expect(articles).toBeSortedBy("votes", { descending: false });
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed and invalid sort query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=cinnamon")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Sort Query");
+      });
+  });
+
+  it("400: ERROR - responds with an error message when passed and invalid order query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=caramel")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Order Query");
       });
   });
 });
